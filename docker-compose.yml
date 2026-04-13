@@ -1,0 +1,131 @@
+services:
+  backend:
+    build: ./app/backend
+    container_name: backend
+    ports:
+      - "300:3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=admin
+      - DB_PASSWORD=rootpass
+      - DB_NAME=db
+      - PORT=5000
+      - SYNC_INTERVAL=50000
+      - MANTIS_BASE_URL=http://mantis
+      - REDMINE_URL=http://redmine:3000
+    depends_on:
+      - db
+    networks:
+      - main-network
+      - itsm-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./app/react-frontend
+    container_name: frontend-app
+    ports:
+      - "3005:3005"
+    depends_on:
+      - backend
+    networks:
+      - main-network
+    restart: unless-stopped
+
+  db:
+    image: mysql:latest
+    container_name: issues-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: db
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: rootpass
+    ports:
+      - "3305:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./app/backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    networks:
+      - main-network
+
+  mantis:
+    image: vimagick/mantisbt
+    container_name: mantis
+    ports:
+      - "3200:80"
+    depends_on:
+      - mysql-mantis
+    networks:
+      - itsm-network
+      - main-network
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mantis
+      MYSQL_USER: mantis_user
+      MYSQL_PASSWORD: mantis_pass
+
+  mysql-mantis:
+    image: mysql:5.6
+    container_name: mysql-mantis
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mantis
+      MYSQL_USER: mantis_user
+      MYSQL_PASSWORD: mantis_pass
+    ports:
+      - "3307:3306"
+    networks:
+      - itsm-network
+
+  redmine:
+    image: redmine:latest
+    container_name: redmine
+    ports:
+      - "3100:3000"
+    depends_on:
+      - redmine_db
+    networks:
+      - main-network
+      - itsm-network
+    restart: unless-stopped
+    environment:
+      REDMINE_DB_MYSQL: redmine_db
+      REDMINE_DB_USERNAME: redmine
+      REDMINE_DB_PASSWORD: redmine
+      REDMINE_DB_NAME: redmine
+
+  redmine_db:
+    image: mysql:5.7
+    container_name: redmine_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: redmine
+      MYSQL_USER: redmine
+      MYSQL_PASSWORD: redmine
+    ports:
+      - "3308:3306"
+    volumes:
+      - redmine_data:/var/lib/mysql
+    networks:
+      - main-network
+      - itsm-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+  mantis_data:
+  redmine_data:
+
+networks:
+  main-network:
+    driver: bridge
+  itsm-network:
+    driver: bridge
