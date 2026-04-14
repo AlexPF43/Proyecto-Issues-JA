@@ -107,7 +107,16 @@ export class Ticket {
         params.push(filters.dateTo);
       }
 
-      query += ' ORDER BY external_created_at DESC';
+      const allowedSortColumns = {
+        'external_created_at': 'external_created_at',
+        'priority': 'priority',
+        'external_updated_at': 'external_updated_at'
+      };
+      
+      const sortColumn = allowedSortColumns[filters.sortBy] || 'external_created_at';
+      const sortOrder = (filters.sortOrder && filters.sortOrder.toUpperCase() === 'ASC') ? 'ASC' : 'DESC';
+
+      query += ` ORDER BY ${sortColumn} ${sortOrder}`;
 
       const [rows] = await connection.query(query, params);
       return rows;

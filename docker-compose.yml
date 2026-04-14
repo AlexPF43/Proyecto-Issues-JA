@@ -50,7 +50,7 @@ services:
       - main-network
 
   mantis:
-    image: vimagick/mantisbt
+    build: ./mantis
     container_name: mantis
     ports:
       - "3200:80"

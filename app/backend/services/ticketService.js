@@ -80,6 +80,8 @@ export async function getAllTickets(filters = {}) {
       status: filters.status && filters.status.length > 0 ? filters.status : null,
       dateFrom: filters.dateFrom,
       dateTo: filters.dateTo,
+      sortBy: filters.sortBy,
+      sortOrder: filters.sortOrder
     };
 
     // Remover filtros vacíos

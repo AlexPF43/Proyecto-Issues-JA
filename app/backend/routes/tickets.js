@@ -11,7 +11,9 @@ router.get("/", async (req, res) => {
       status: req.query.status ? req.query.status.split(",") : [],
       source: req.query.source ? req.query.source.split(",") : [],
       dateFrom: req.query.dateFrom || null,
-      dateTo: req.query.dateTo || null
+      dateTo: req.query.dateTo || null,
+      sortBy: req.query.sortBy || "external_created_at",
+      sortOrder: req.query.sortOrder || "DESC"
     };
 
     const tickets = await getAllTickets(filters);
