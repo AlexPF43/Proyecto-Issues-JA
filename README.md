@@ -23,21 +23,47 @@ npm install
 
 ## Configuración del entorno
 
-1. En la carpeta app/backend, asegúrate de tener configurado tu archivo .env con las variables de entorno necesarias.
+1. En la carpeta app/backend, asegúrate de tener configurado tu archivo .env con estas variables:
+
+# ===== BASE DE DATOS MYSQL =====
+# En Docker: usar nombre del servicio en docker-compose, en local: usar localhost
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=
+
+# ===== SERVIDOR (server.js) =====
+PORT=3000
+
+# ===== SINCRONIZACIÓN =====
+# Intervalo en milisegundos (1000 ms= 1 sec)
+SYNC_INTERVAL=
+
+# ===== MANTIS =====
+MANTIS_URL=urlMantis/api/rest/issues
+MANTIS_TOKEN=
+
+# ===== REDMINE =====
+REDMINE_URL=urlRedmine/issues.json
+REDMINE_API_KEY=your_redmine_api_key
+
+# ===== REDMINE =====
+REDMINE_BASE_URL=http://localhost:3100****
 2. En la carpeta app/react-frontend, configura también tu archivo .env (generalmente con el prefijo REACT*APP* para indicar la URL del backend, ej: REACT_APP_API_URL=http://localhost:5000).
 
 ## Ejecución del proyecto
 
 Para levantar todo el entorno, necesitas iniciar ambos servicios.
 
-### Iniciar el servidor Backend
+## Iniciar el servidor Backend
 
 Ve a la terminal que tienes en la carpeta del backend y ejecuta:
 cd app/backend
 npm start
 (El servidor backend se iniciará normalmente en el puerto 5000, o el configurado).
 
-### Iniciar la aplicación Frontend (React)
+## Iniciar la aplicación Frontend (React)
 
 Ve a la terminal que tienes en la carpeta del frontend y ejecuta:
 cd app/react-frontend
