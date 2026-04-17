@@ -23,7 +23,7 @@ npm install
 
 ## Configuración del entorno
 
-1. En la carpeta app/backend, debes tener configurado un archivo .env con estas variables:
+### 1. En la carpeta app/backend, debes tener configurado un archivo .env con estas variables:
 
 === BASE DE DATOS MYSQL ===
 
@@ -49,7 +49,6 @@ Intervalo en milisegundos (1000 ms= 1 sec)
 
 SYNC_INTERVAL=
 
-
 ===== MANTIS =====
 MANTIS_URL=urlMantis/api/rest/issues
 
@@ -59,7 +58,19 @@ MANTIS_TOKEN=
 ===== REDMINE =====
 REDMINE_URL=urlRedmine/issues.json
 
-REDMINE_API_KEY=your_redmine_api_key
+REDMINE_API_KEY=
+
+
+### 2. En la carpeta \react-frontend\src debes tener un archivo .emv con  las siguiente variables:
+
+=== API Backend URL ===
+REACT_APP_API_URL=http://localhost:3000
+
+=== Mantis URL ===
+REACT_APP_MANTIS_URL=http://localhost:3200
+
+=== Redmine URL ===
+REACT_APP_REDMINE_URL=http://localhost:3100
 
 
 ## Ejecución del proyecto
