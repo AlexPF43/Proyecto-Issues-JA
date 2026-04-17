@@ -78,7 +78,7 @@ npm start
 Ve a la terminal que tienes en la carpeta del frontend y ejecuta:
 cd app/react-frontend
 npm start
-(Esto abrirá automáticamente tu navegador en http://localhost:3000 con la aplicación cargada).
+(Esto abrirá automáticamente tu navegador en http://localhost:4000 con la aplicación cargada).
 
 ## Despliegue con Docker (Opcional)
 
