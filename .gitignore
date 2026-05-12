@@ -5,8 +5,9 @@ yarn.lock
 
 # Environment
 .env
-.env.local
-.env.*.local
+
+# Documentación
+README.md
 
 # Build
 dist/

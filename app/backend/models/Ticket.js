@@ -9,12 +9,13 @@ export class Ticket {
     const connection = await pool.getConnection();
     
     try {
-      const {
+      let {
         external_id,
         source,
         title,
         description,
         status,
+        mapped_status,
         priority,
         assigned_to,
         external_created_at,
@@ -22,15 +23,25 @@ export class Ticket {
         data,
       } = ticketData;
 
+      if (!external_id) {
+        console.error("Missing external_id. ticketData:", JSON.stringify(ticketData, null, 2));
+        throw new Error(`Missing external_id in Ticket.upsert, payload: ${JSON.stringify({ source, title, status, mapped_status })}`);
+      }
+
+      if (!title) {
+        throw new Error(`Missing title in Ticket.upsert, external_id: ${external_id}`);
+      }
+
       const query = `
         INSERT INTO tickets (
-          external_id, source, title, description, status, 
+          external_id, source, title, description, status, mapped_status,
           priority, assigned_to, external_created_at, external_updated_at, data
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           title = VALUES(title),
           description = VALUES(description),
           status = VALUES(status),
+          mapped_status = VALUES(mapped_status),
           priority = VALUES(priority),
           assigned_to = VALUES(assigned_to),
           external_updated_at = VALUES(external_updated_at),
@@ -44,6 +55,7 @@ export class Ticket {
         title,
         description,
         status,
+        mapped_status,
         priority,
         assigned_to,
         external_created_at,
@@ -84,11 +96,11 @@ export class Ticket {
       if (filters.status) {
         if (Array.isArray(filters.status)) {
           const placeholders = filters.status.map(() => '?').join(',');
-          query += ` AND status IN (${placeholders})`;
-          params.push(...filters.status);
+          query += ` AND (status IN (${placeholders}) OR mapped_status IN (${placeholders}))`;
+          params.push(...filters.status, ...filters.status);
         } else {
-          query += ' AND status = ?';
-          params.push(filters.status);
+          query += ' AND (status = ? OR mapped_status = ?)';
+          params.push(filters.status, filters.status);
         }
       }
 
@@ -164,6 +176,28 @@ export class Ticket {
     }
   }
 
+  static async deleteMissingBySource(source, externalIds = []) {
+    const connection = await pool.getConnection();
+    try {
+      let query = 'DELETE FROM tickets WHERE source = ?';
+      const params = [source];
+
+      if (externalIds.length > 0) {
+        const placeholders = externalIds.map(() => '?').join(',');
+        query += ` AND external_id NOT IN (${placeholders})`;
+        params.push(...externalIds);
+      }
+
+      const [result] = await connection.query(query, params);
+      return result.affectedRows;
+    } catch (error) {
+      console.error('Error al eliminar tickets no existentes para el origen', source, error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
   /**
    * Contar tickets por filtros
    */
@@ -182,11 +216,11 @@ export class Ticket {
       if (filters.status) {
         if (Array.isArray(filters.status)) {
           const placeholders = filters.status.map(() => '?').join(',');
-          query += ` AND status IN (${placeholders})`;
-          params.push(...filters.status);
+          query += ` AND (status IN (${placeholders}) OR mapped_status IN (${placeholders}))`;
+          params.push(...filters.status, ...filters.status);
         } else {
-          query += ' AND status = ?';
-          params.push(filters.status);
+          query += ' AND (status = ? OR mapped_status = ?)';
+          params.push(filters.status, filters.status);
         }
       }
 

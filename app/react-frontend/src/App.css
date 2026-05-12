@@ -76,6 +76,22 @@ main {
   background-color: #007a64;
 }
 
+.btn-config {
+  background-color: #5c6ac4;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-config:hover {
+  background-color: #3e4db5;
+}
+
 .filters-active {
   background-color: #ffc412;
   color: #333;
@@ -180,4 +196,37 @@ main {
 
 .no-results {
   color: #999;
+}
+
+/* Estilos para el semáforo de cumplimiento ANS */
+.semaforo {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+.semaforo.verde {
+  background-color: green;
+}
+
+.semaforo.amarillo {
+  background-color: orange;
+}
+
+.semaforo.rojo {
+  background-color: red;
+}
+
+.ans-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
+.ans-text {
+  color: #333;
+  font-weight: 600;
 }

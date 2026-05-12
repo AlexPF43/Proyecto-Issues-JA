@@ -74,6 +74,13 @@ export const DetailsModal = ({ isOpen, ticket, onClose }) => {
             </div>
 
             <div className="detail-row">
+              <label>Estado padre:</label>
+              <span className={`status-badge status-${ticket.mapped_status?.toLowerCase()}`}>
+                {ticket.mapped_status || 'No asignado'}
+              </span>
+            </div>
+
+            <div className="detail-row">
               <label>Prioridad:</label>
               <span className={`priority-badge priority-${ticket.priority?.toLowerCase()}`}>
                 {ticket.priority}

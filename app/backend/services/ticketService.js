@@ -2,6 +2,7 @@
 import { getMantisTickets } from "../adapters/mantisAdapter.js";
 import { getRedmineTickets } from "../adapters/redmineAdapter.js";
 import Ticket from "../models/Ticket.js";
+import CustomStateMapping from "../models/CustomStateMapping.js";
 
 /**
  * Normalizar fecha al formato MySQL DATETIME
@@ -13,12 +14,39 @@ function normalizeDate(dateStr) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function normalizeStatus(source, rawStatus, mappings) {
+  if (!rawStatus) return null;
+  const normalized = String(rawStatus).trim();
+  const mapping = mappings.find(m =>
+    m.source === source && m.custom_state.trim().toLowerCase() === normalized.toLowerCase()
+  );
+  return mapping ? mapping.parent_state : normalized;
+}
+
+export async function getAllCustomStates() {
+  return await CustomStateMapping.findAll();
+}
+
+export async function addCustomStateMapping(mapping) {
+  const existing = await CustomStateMapping.findBySourceAndCustomState(mapping.source, mapping.custom_state);
+  if (existing) {
+    throw new Error(`El mapeo para el estado personalizado '${mapping.custom_state}' ya existe para ${mapping.source}`);
+  }
+  return await CustomStateMapping.create(mapping);
+}
+
+export async function deleteCustomStateMapping(id) {
+  return await CustomStateMapping.deleteById(id);
+}
+
 /**
- * Sincronizar tickets desde Mantis y Redmine a PostgreSQL
+ * Sincronizar tickets desde Mantis y Redmine a la base de datos
  */
 export async function syncTicketsToDB() {
   try {
     console.log("Sincronizando tickets...");
+
+    const mappings = await CustomStateMapping.findAll();
 
     // Obtener tickets de ambas fuentes
     const mantis = await getMantisTickets();
@@ -28,12 +56,14 @@ export async function syncTicketsToDB() {
 
     // Guardar tickets de Mantis
     for (const ticket of mantis) {
+      const mapped_status = normalizeStatus('mantis', ticket.status, mappings);
       await Ticket.upsert({
         external_id: ticket.id,
         source: "mantis",
         title: ticket.title,
         description: ticket.description,
         status: ticket.status,
+        mapped_status,
         priority: ticket.priority,
         assigned_to: ticket.assigned_to,
         external_created_at: normalizeDate(ticket.created_at),
@@ -43,14 +73,20 @@ export async function syncTicketsToDB() {
       syncCount++;
     }
 
-    // Guardar tickets de Redmine
-    for (const ticket of redmine) {
+    const mantisIds = mantis
+      .map(ticket => ticket.id)
+      .filter(id => id !== undefined && id !== null);
+
+    // Guardar tickets de Mantis
+    for (const ticket of mantis) {
+      const mapped_status = normalizeStatus('mantis', ticket.status, mappings);
       await Ticket.upsert({
         external_id: ticket.id,
-        source: "redmine",
+        source: "mantis",
         title: ticket.title,
         description: ticket.description,
         status: ticket.status,
+        mapped_status,
         priority: ticket.priority,
         assigned_to: ticket.assigned_to,
         external_created_at: normalizeDate(ticket.created_at),
@@ -59,6 +95,33 @@ export async function syncTicketsToDB() {
       });
       syncCount++;
     }
+
+    await Ticket.deleteMissingBySource('mantis', mantisIds);
+
+    const redmineIds = redmine
+      .map(ticket => ticket.id)
+      .filter(id => id !== undefined && id !== null);
+
+    // Guardar tickets de Redmine
+    for (const ticket of redmine) {
+      const mapped_status = normalizeStatus('redmine', ticket.status, mappings);
+      await Ticket.upsert({
+        external_id: ticket.id,
+        source: "redmine",
+        title: ticket.title,
+        description: ticket.description,
+        status: ticket.status,
+        mapped_status,
+        priority: ticket.priority,
+        assigned_to: ticket.assigned_to,
+        external_created_at: normalizeDate(ticket.created_at),
+        external_updated_at: normalizeDate(ticket.updated_at),
+        data: ticket,
+      });
+      syncCount++;
+    }
+
+    await Ticket.deleteMissingBySource('redmine', redmineIds);
 
     console.log(`✓ Sincronización completada: ${syncCount} tickets procesados`);
     return { success: true, count: syncCount };
@@ -73,7 +136,6 @@ export async function syncTicketsToDB() {
  */
 export async function getAllTickets(filters = {}) {
   try {
-    // Convertir filtros al formato esperado por la BD
     const dbFilters = {
       title: filters.title,
       source: filters.source && filters.source.length > 0 ? filters.source : null,
@@ -84,7 +146,6 @@ export async function getAllTickets(filters = {}) {
       sortOrder: filters.sortOrder
     };
 
-    // Remover filtros vacíos
     Object.keys(dbFilters).forEach(
       (key) => dbFilters[key] === null || dbFilters[key] === undefined ? delete dbFilters[key] : {}
     );

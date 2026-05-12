@@ -5,6 +5,34 @@ import { DetailsModal } from './DetailsModal';
 export const Fila = ({ ticket }) => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+  // Función para calcular el semáforo de cumplimiento ANS
+  const getAnsData = () => {
+    const normalizedStatus = (ticket.mapped_status || ticket.status || '').toString().trim().toLowerCase();
+    if (['new', 'nuevo', 'nueva'].indexOf(normalizedStatus) === -1) return null;
+
+    const createdAtValue = ticket.external_created_at || ticket.created_at;
+    const createdAt = new Date(createdAtValue);
+    if (!createdAtValue || isNaN(createdAt.getTime())) return null;
+
+    const now = new Date();
+    const elapsed = (now - createdAt) / (1000 * 60 * 60); // horas transcurridas
+
+    const normalizedPriority = (ticket.priority || '').toString().trim().toLowerCase();
+    const isUrgent = normalizedPriority.includes('urg') || normalizedPriority.includes('alta');
+    const limit = isUrgent ? 6 : 8;
+
+    const percentage = elapsed / limit;
+    const color = percentage >= 1 ? 'rojo' : percentage >= 0.75 ? 'amarillo' : 'verde';
+    const remaining = Math.max(limit - elapsed, 0);
+    const hoursText = elapsed >= limit
+      ? `+${(elapsed - limit).toFixed(1)}h`
+      : `${remaining.toFixed(1)}h`;
+
+    return { color, hoursText };
+  };
+
+  const ansData = getAnsData();
+
   // Manejo de detalles del ticket
   const handleDetailsClick = () => {
     setIsDetailsModalOpen(true);
@@ -32,6 +60,14 @@ export const Fila = ({ ticket }) => {
         <td>{ticket.title}</td>
         <td>{ticket.status}</td>
         <td>{ticket.priority}</td>
+        <td>
+          {ansData ? (
+            <div className="ans-cell">
+              <div className={`semaforo ${ansData.color}`}></div>
+              <span className="ans-text">{ansData.hoursText}</span>
+            </div>
+          ) : '-'}
+        </td>
         <td>
           <ActionsCell
             ticket={ticket}

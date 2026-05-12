@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import ticketsRoutes from "./routes/tickets.js";
+import customStatesRoutes from "./routes/customStates.js";
 import { syncTicketsToDB, getTicketStats } from "./services/ticketService.js";
 
 dotenv.config();
@@ -13,6 +14,7 @@ app.use(cors());
 
 // Rutas
 app.use("/tickets", ticketsRoutes);
+app.use("/custom-states", customStatesRoutes);
 
 // Endpoint de salud
 app.get("/health", (req, res) => {

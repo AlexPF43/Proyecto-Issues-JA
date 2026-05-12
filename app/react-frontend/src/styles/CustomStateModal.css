@@ -1,0 +1,82 @@
+.custom-state-modal {
+  max-width: 800px;
+}
+
+.mapping-form {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group select {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.form-error {
+  color: #c4302b;
+  margin-top: -8px;
+  font-size: 14px;
+}
+
+.mapping-list table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mapping-list th,
+.mapping-list td {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.mapping-list thead {
+  background-color: #f1f5f9;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .mapping-list table,
+  .mapping-list thead,
+  .mapping-list tbody,
+  .mapping-list th,
+  .mapping-list td,
+  .mapping-list tr {
+    display: block;
+  }
+
+  .mapping-list th {
+    display: none;
+  }
+
+  .mapping-list td {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 8px;
+  }
+
+  .mapping-list td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    margin-right: 10px;
+  }
+}

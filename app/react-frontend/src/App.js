@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FilterModal } from './components/FilterModal';
 import { SortDropdown } from './components/SortDropdown';
 import { Fila } from './components/Fila';
+import { CustomStateModal } from './components/CustomStateModal';
 
 function App() {
   const [tickets, setTickets] = useState([]);
@@ -29,6 +30,7 @@ function App() {
     sortBy: "external_created_at",
     sortOrder: "DESC"
   });
+  const [isStateModalOpen, setIsStateModalOpen] = useState(false);
 
   useEffect(() => {
     cargarTickets();
@@ -158,6 +160,10 @@ function App() {
               className="btn-filters"
               onClick={() => setIsFilterModalOpen(true)}
             >Filtros</button>
+            <button
+              className="btn-config"
+              onClick={() => setIsStateModalOpen(true)}
+            >Configurar estados</button>
             {(appliedFilters.title || appliedFilters.status.length > 0 || appliedFilters.source.length > 0 || appliedFilters.dateFrom || appliedFilters.dateTo) && (
               <span className="filters-active">Filtros activos</span>
             )}
@@ -183,13 +189,14 @@ function App() {
               <th>TÍTULO</th>
               <th>ESTADO</th>
               <th>PRIORIDAD</th>
+              <th>CUMPLIMIENTO ANS</th>
               <th>ACCIONES</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan="6" className="loading">
+                <td colSpan="7" className="loading">
                   Cargando tickets...
                 </td>
               </tr>
@@ -199,13 +206,18 @@ function App() {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="no-results">
+                <td colSpan="7" className="no-results">
                   No se encontraron tickets con los filtros aplicados
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+
+        <CustomStateModal
+          isOpen={isStateModalOpen}
+          onClose={() => setIsStateModalOpen(false)}
+        />
 
         {/* Controles de paginación */}
         {totalPages > 1 && (
