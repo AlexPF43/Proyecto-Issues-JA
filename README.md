@@ -44,6 +44,7 @@ cd app/react-frontend
 npm start
 (Esto abrirá automáticamente tu navegador en http://localhost:3000 con la aplicación cargada).
 
+Como existen estrados personalizados estos deben de añadirse previamente antes de su uso en 'Configurar estados'. Aqui se debe seleccionar el ITMS correspondiente, añadir el nombre exacto del estado personalizado e indicar al estado padre perteneciente.
 ## Despliegue con Docker (Opcional)
 
 Si prefieres usar Docker, este proyecto también incluye la configuración necesaria:
